@@ -21,6 +21,19 @@ def load_pretrained_model(pretrained_dir, num_hiddens, ffn_num_hiddens,num_heads
                                                  'pretrained.params')))
     return bert, vocab
 
+def load_finetune_model(path, num_hiddens, ffn_num_hiddens,num_heads, num_layers, dropout, max_len, devices):
+    data_dir = 'data/bert.small.torch/'
+    #讀取vocab
+    vocab = Vocab()
+    vocab.idx_to_token = json.load(open(os.path.join(data_dir,
+        'vocab.json')))
+    vocab.token_to_idx = {token: idx for idx, token in enumerate(
+        vocab.idx_to_token)}
+    model = BERTModel(vocab_size = len(vocab), num_hiddens = num_hiddens,ffn_num_hiddens = ffn_num_hiddens, num_heads = num_heads,num_layers = num_layers, dropout = dropout, max_len = max_len,norm_shape = [256],ffn_num_input = 256)
+    bert = BERTClassifier(model)
+    bert.load_state_dict(torch.load(path))
+    return bert, vocab
+
 class BERTClassifier(nn.Module):
     def __init__(self, bert):
         super(BERTClassifier, self).__init__()
@@ -114,20 +127,31 @@ def main():
     batch_size, max_len= 5, 512
     train_test_rate = 0.9
     lr, num_epochs = 1e-4, 5
+    model_save_path = "models/bert_finetune.model"
     print("Loading Pretraining Model...")
-    bert, vocab = load_pretrained_model('bert.small', num_hiddens=256, ffn_num_hiddens=512, num_heads=4,num_layers=2, dropout=0.1, max_len=512, devices=devices)
+
+    #重新微調
+    #bert, vocab = load_pretrained_model('bert.small', num_hiddens=256, ffn_num_hiddens=512, num_heads=4,num_layers=2, dropout=0.1, max_len=512, devices=devices)
+    #net = BERTClassifier(bert)
+    
+    #讀取訓練過的
+    bert, vocab = load_finetune_model('models/bert_finetune.model', num_hiddens=256, ffn_num_hiddens=512, num_heads=4,num_layers=2, dropout=0.1, max_len=512, devices=devices)
+    net = bert
+    
     print("Loading Train Dataset...")
     trainDataset = YelpDataset('dataset/reviews_small.csv',max_len,vocab,True,train_test_rate)
     train_iter = torch.utils.data.DataLoader(trainDataset, batch_size, shuffle=True)
     print("Loading Test Dataset...")
     testDataset = YelpDataset('dataset/reviews_small.csv',max_len,vocab,False,train_test_rate)
     test_iter = torch.utils.data.DataLoader(testDataset, batch_size)
-    net = BERTClassifier(bert)
+    
+    
     print("training...")
     trainer = torch.optim.Adam(net.parameters(), lr=lr)
     loss = nn.CrossEntropyLoss(reduction='none')
     train_ch13(net, train_iter, test_iter, loss, trainer, 10,
         devices) 
+    torch.save(net.state_dict(), model_save_path)
     
 if __name__ == "__main__":
     main()
