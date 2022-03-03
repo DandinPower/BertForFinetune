@@ -117,7 +117,7 @@ def main():
     print("Loading Pretraining Model...")
     bert, vocab = load_pretrained_model('bert.small', num_hiddens=256, ffn_num_hiddens=512, num_heads=4,num_layers=2, dropout=0.1, max_len=512, devices=devices)
     print("Loading Train Dataset...")
-    trainDataset = YelpDataset('data/reviews_small.csv',max_len,vocab,True,train_test_rate)
+    trainDataset = YelpDataset('dataset/reviews_small.csv',max_len,vocab,True,train_test_rate)
     train_iter = torch.utils.data.DataLoader(trainDataset, batch_size, shuffle=True)
     print("Loading Test Dataset...")
     testDataset = YelpDataset('dataset/reviews_small.csv',max_len,vocab,False,train_test_rate)
