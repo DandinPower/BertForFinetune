@@ -73,14 +73,14 @@ class YelpDataset(torch.utils.data.Dataset):
     #讀取dataset
     def ReadDataset(self):
         df = pd.read_csv(self.path)  
-        #print(df.Stars.values)
+        print(df.head(10))
+        print(df.tail(10))
         labels = []
         for item in df.Stars.values:
             if item >= 4:
                 labels.append(1)
             else:
                 labels.append(0)
-        #print(labels)
         texts = [line.strip().lower().split(' ')for line in df.Text.values]
         trainLen = int(len(df.Text.values) * self.splitRate) 
         if (self.train):
@@ -128,7 +128,7 @@ def main():
     train_test_rate = 0.9
     lr, num_epochs = 1e-4, 5
     model_save_path = "models/bert_finetune.model"
-    dataset_path = 'dataset/reviews_small.csv'
+    dataset_path = 'dataset/reviews.csv'
     print("Loading Pretraining Model...")
 
     #重新微調
