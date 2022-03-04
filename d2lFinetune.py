@@ -76,12 +76,16 @@ class YelpDataset(torch.utils.data.Dataset):
         print(df.head(10))
         print(df.tail(10))
         labels = []
-        for item in df.Stars.values:
-            if item >= 4:
+        texts = []
+        for i in range(len(df.Stars.values)):
+            text = df.Text.values[i]
+            label = df.Stars.values[i]
+            if (type(text) != str): continue
+            if label >= 4:
                 labels.append(1)
             else:
                 labels.append(0)
-        texts = [line.strip().lower().split(' ')for line in df.Text.values]
+            texts.append(text.strip().lower().split(' '))
         trainLen = int(len(df.Text.values) * self.splitRate) 
         if (self.train):
             texts = texts[0:trainLen]
