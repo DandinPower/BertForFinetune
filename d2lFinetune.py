@@ -76,17 +76,12 @@ class YelpDataset(torch.utils.data.Dataset):
 
     #讀取dataset
     def ReadDataset(self):
-        self.iocounter.AddRead()
-        self.memorycounter.Add()
+        #self.iocounter.AddRead()
         df = pd.read_csv(self.path)
-        self.memorycounter.Add()
-        self.iocounter.AddRead()
-        print("資料讀取進來的ReadBytes總量: ")
-        self.iocounter.GetRead(0, 1) 
-        print("記憶體占用的Bytes總量: ")
-        self.memorycounter.GetData(0, 1)
-        self.iocounter.Clear()
-        self.memorycounter.Clear() 
+        #self.iocounter.AddRead()
+        #print("資料讀取進來的ReadBytes總量: ")
+        #self.iocounter.GetRead(0, 1) 
+        #self.iocounter.Clear()
         #print(df.head(10))
         #print(df.tail(10))
         labels = []
@@ -128,7 +123,8 @@ class YelpDataset(torch.utils.data.Dataset):
     def PadBertInput(self,texts,segments):
         texts = self.vocab[texts]
         for (text,segment) in zip(texts,segments):
-            self.all_tokens_ids.append(torch.tensor(text + [self.vocab['<pad>']] * (self.max_len - len(text)), dtype=torch.long))
+            paddingText = torch.tensor(text + [self.vocab['<pad>']] * (self.max_len - len(text)), dtype=torch.long)
+            self.all_tokens_ids.append(paddingText)
             self.all_segments.append(torch.tensor(segment + [0] * (self.max_len - len(segment)), dtype=torch.long))
             #valid_lens不包括<pad>
             self.valid_lens.append(torch.tensor(len(text), dtype=torch.float32))
