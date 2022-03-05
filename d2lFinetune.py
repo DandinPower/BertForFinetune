@@ -1,10 +1,12 @@
 import json
 import multiprocessing
+from memory_profiler import profile
 import os
 import torch
 from torch import nn
 import pandas as pd # 引用套件並縮寫為 pd  
 from models.BertModel import *
+from models.Memory import IOCounter,MemoryCounter
 
 def load_pretrained_model(pretrained_dir, num_hiddens, ffn_num_hiddens,num_heads, num_layers, dropout, max_len, devices):
     data_dir = pretrained_dir
@@ -57,6 +59,8 @@ class YelpDataset(torch.utils.data.Dataset):
         self.path = datasetPath
         self.train = train
         self.splitRate = splitRate
+        self.iocounter = IOCounter()
+        self.memorycounter = MemoryCounter()
         self.Preprocess()
 
     #將資料做預處理
@@ -72,9 +76,19 @@ class YelpDataset(torch.utils.data.Dataset):
 
     #讀取dataset
     def ReadDataset(self):
-        df = pd.read_csv(self.path)  
-        print(df.head(10))
-        print(df.tail(10))
+        self.iocounter.AddRead()
+        self.memorycounter.Add()
+        df = pd.read_csv(self.path)
+        self.memorycounter.Add()
+        self.iocounter.AddRead()
+        print("資料讀取進來的ReadBytes總量: ")
+        self.iocounter.GetRead(0, 1) 
+        print("記憶體占用的Bytes總量: ")
+        self.memorycounter.GetData(0, 1)
+        self.iocounter.Clear()
+        self.memorycounter.Clear() 
+        #print(df.head(10))
+        #print(df.tail(10))
         labels = []
         texts = []
         for i in range(len(df.Stars.values)):
@@ -132,7 +146,7 @@ def main():
     train_test_rate = 0.9
     lr, num_epochs = 1e-4, 5
     model_save_path = "models/bert_finetune.model"
-    dataset_path = 'dataset/reviews.csv'
+    dataset_path = 'dataset/reviews_small.csv'
     print("Loading Pretraining Model...")
 
     #重新微調

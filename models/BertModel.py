@@ -669,10 +669,6 @@ class Vocab:
         return self._token_freqs
 
 def count_corpus(tokens):
-    """Count token frequencies.
-
-    Defined in :numref:`sec_text_preprocessing`"""
-    # Here `tokens` is a 1D list or 2D list
     if len(tokens) == 0 or isinstance(tokens[0], list):
         # Flatten a list of token lists into a list of tokens
         tokens = [token for line in tokens for token in line]
