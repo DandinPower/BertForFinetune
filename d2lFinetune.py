@@ -1,6 +1,5 @@
 import json
 import multiprocessing
-from memory_profiler import profile
 import os
 import torch
 from torch import nn
@@ -138,11 +137,11 @@ class YelpDataset(torch.utils.data.Dataset):
 
 def main():
     devices = d2l.try_all_gpus()
-    batch_size, max_len= 5, 512
+    batch_size, max_len= 32, 512
     train_test_rate = 0.9
     lr, num_epochs = 1e-4, 5
     model_save_path = "models/bert_finetune.model"
-    dataset_path = 'dataset/reviews_small.csv'
+    dataset_path = 'dataset/reviews_medium.csv'
     print("Loading Pretraining Model...")
 
     #重新微調
