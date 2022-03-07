@@ -141,7 +141,7 @@ def main():
     train_test_rate = 0.9
     lr, num_epochs = 1e-4, 5
     model_save_path = "models/bert_finetune.model"
-    dataset_path = 'dataset/reviews_medium.csv'
+    dataset_path = 'dataset/reviews_small.csv'
     print("Loading Pretraining Model...")
 
     #重新微調
@@ -151,23 +151,18 @@ def main():
     #讀取訓練過的
     #bert, vocab = load_finetune_model(model_save_path, num_hiddens=256, ffn_num_hiddens=512, num_heads=4,num_layers=2, dropout=0.1, max_len=512, devices=devices)
     #net = bert
-    
     print("Loading Train Dataset...")
     trainDataset = YelpDataset(dataset_path,max_len,vocab,True,train_test_rate)
     train_iter = torch.utils.data.DataLoader(trainDataset, batch_size, shuffle=True)
     print("Loading Test Dataset...")
     testDataset = YelpDataset(dataset_path,max_len,vocab,False,train_test_rate)
     test_iter = torch.utils.data.DataLoader(testDataset, batch_size)
-    
-    
     print("training...")
     trainer = torch.optim.Adam(net.parameters(), lr=lr)
     loss = nn.CrossEntropyLoss(reduction='none')
-    #train_ch13(net, train_iter, test_iter, loss, trainer, 10,
-    #    devices)
-    finetune_train(net, train_iter, test_iter, loss, trainer, 10, model_save_path,
+    finetune_train(net, train_iter, test_iter, loss, trainer, 3, model_save_path,
         devices) 
     torch.save(net.state_dict(), model_save_path)
-    
+
 if __name__ == "__main__":
     main()
