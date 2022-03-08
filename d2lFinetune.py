@@ -75,14 +75,7 @@ class YelpDataset(torch.utils.data.Dataset):
 
     #讀取dataset
     def ReadDataset(self):
-        #self.iocounter.AddRead()
         df = pd.read_csv(self.path)
-        #self.iocounter.AddRead()
-        #print("資料讀取進來的ReadBytes總量: ")
-        #self.iocounter.GetRead(0, 1) 
-        #self.iocounter.Clear()
-        #print(df.head(10))
-        #print(df.tail(10))
         labels = []
         texts = []
         for i in range(len(df.Stars.values)):
@@ -135,7 +128,7 @@ class YelpDataset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.all_tokens_ids)
 
-def main():
+def Finetune():
     devices = d2l.try_all_gpus()
     batch_size, max_len= 32, 512
     train_test_rate = 0.9
@@ -143,14 +136,12 @@ def main():
     model_save_path = "models/bert_finetune.model"
     dataset_path = 'dataset/reviews_small.csv'
     print("Loading Pretraining Model...")
-
     #重新微調
-    bert, vocab = load_pretrained_model('bert.small', num_hiddens=256, ffn_num_hiddens=512, num_heads=4,num_layers=2, dropout=0.1, max_len=512, devices=devices)
-    net = BERTClassifier(bert)
-    
+    #bert, vocab = load_pretrained_model('bert.small', num_hiddens=256, ffn_num_hiddens=512, num_heads=4,num_layers=2, dropout=0.1, max_len=512, devices=devices)
+    #net = BERTClassifier(bert)
     #讀取訓練過的
-    #bert, vocab = load_finetune_model(model_save_path, num_hiddens=256, ffn_num_hiddens=512, num_heads=4,num_layers=2, dropout=0.1, max_len=512, devices=devices)
-    #net = bert
+    bert, vocab = load_finetune_model(model_save_path, num_hiddens=256, ffn_num_hiddens=512, num_heads=4,num_layers=2, dropout=0.1, max_len=512, devices=devices)
+    net = bert
     print("Loading Train Dataset...")
     trainDataset = YelpDataset(dataset_path,max_len,vocab,True,train_test_rate)
     train_iter = torch.utils.data.DataLoader(trainDataset, batch_size, shuffle=True)
@@ -165,4 +156,4 @@ def main():
     torch.save(net.state_dict(), model_save_path)
 
 if __name__ == "__main__":
-    main()
+    Finetune()

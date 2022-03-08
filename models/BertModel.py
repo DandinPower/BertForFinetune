@@ -1644,7 +1644,6 @@ def train_ch13(net, train_iter, test_iter, loss, trainer, num_epochs,
 
 def finetune_train(net, train_iter, test_iter, loss, trainer, num_epochs, savePath, devices=d2l.try_all_gpus()):
     timer, num_batches = d2l.Timer(), len(train_iter)
-    print(num_batches)
     net = nn.DataParallel(net, device_ids=devices).to(devices[0])
     for epoch in range(num_epochs):
         metric = d2l.Accumulator(4)
@@ -1659,11 +1658,8 @@ def finetune_train(net, train_iter, test_iter, loss, trainer, num_epochs, savePa
           f'{metric[1] / metric[3]:.3f}, test acc {test_acc:.3f}')
         torch.save(net.state_dict(), savePath)
         print(f"saving epoch:{epoch}'s model at {savePath}")
-    print(f'loss {metric[0] / metric[2]:.3f}, train acc '
-          f'{metric[1] / metric[3]:.3f}, test acc {test_acc:.3f}')
     print(f'{metric[2] * num_epochs / timer.sum():.1f} examples/sec on '
           f'{str(devices)}')
-
 
 d2l.DATA_HUB['hotdog'] = (d2l.DATA_URL + 'hotdog.zip',
                          'fba480ffa8aa7e0febbb511d181409f899b9baa5')
