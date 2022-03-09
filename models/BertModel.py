@@ -55,6 +55,7 @@ from collections import defaultdict
 import pandas as pd
 import requests
 from IPython import display
+from progressbar import ProgressBar
 from matplotlib import pyplot as plt
 
 d2l = sys.modules[__name__]
@@ -1647,13 +1648,21 @@ def finetune_train(net, train_iter, test_iter, loss, trainer, num_epochs, savePa
     net = nn.DataParallel(net, device_ids=devices).to(devices[0])
     for epoch in range(num_epochs):
         metric = d2l.Accumulator(4)
+        startTime = time.time()
+        j = 0
+        total = len(train_iter)
+        pBar = ProgressBar().start()
         for i, (features, labels) in enumerate(train_iter):
             timer.start()
             l, acc = train_batch_ch13(
                 net, features, labels, loss, trainer, devices)
             metric.add(l, acc, labels.shape[0], labels.numel())
             timer.stop()
+            pBar.update(int((j / (total - 1)) * 100))
+            j += 1        
+        pBar.finish()
         test_acc = d2l.evaluate_accuracy_gpu(net, test_iter)
+        print(f'cost time: {round(time.time() - startTime,3)} sec')
         print(f'loss {metric[0] / metric[2]:.3f}, train acc '
           f'{metric[1] / metric[3]:.3f}, test acc {test_acc:.3f}')
         torch.save(net.state_dict(), savePath)
