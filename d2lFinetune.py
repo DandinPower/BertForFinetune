@@ -131,18 +131,18 @@ class YelpDataset(torch.utils.data.Dataset):
 
 def Finetune():
     devices = d2l.try_all_gpus()
-    batch_size, max_len= 32, 512
+    batch_size, max_len= 5, 512
     train_test_rate = 0.9
     lr, num_epochs = 1e-4, 5
     model_save_path = "models/bert_finetune.model"
     dataset_path = 'dataset/reviews_small.csv'
     print("Loading Pretraining Model...")
     #重新微調
-    #bert, vocab = load_pretrained_model('bert.small', num_hiddens=256, ffn_num_hiddens=512, num_heads=4,num_layers=2, dropout=0.1, max_len=512, devices=devices)
-    #net = BERTClassifier(bert)
+    bert, vocab = load_pretrained_model('bert.small', num_hiddens=256, ffn_num_hiddens=512, num_heads=4,num_layers=2, dropout=0.1, max_len=512, devices=devices)
+    net = BERTClassifier(bert)
     #讀取訓練過的
-    bert, vocab = load_finetune_model(model_save_path, num_hiddens=256, ffn_num_hiddens=512, num_heads=4,num_layers=2, dropout=0.1, max_len=512, devices=devices)
-    net = bert
+    #bert, vocab = load_finetune_model(model_save_path, num_hiddens=256, ffn_num_hiddens=512, num_heads=4,num_layers=2, dropout=0.1, max_len=512, devices=devices)
+    #net = bert
     print("Loading Train Dataset...")
     trainDataset = YelpDataset(dataset_path,max_len,vocab,True,train_test_rate)
     train_iter = torch.utils.data.DataLoader(trainDataset, batch_size, shuffle=True)
@@ -156,5 +156,20 @@ def Finetune():
         devices) 
     torch.save(net.state_dict(), model_save_path)
 
+def CompareParameter():
+    devices = d2l.try_all_gpus()
+    model_save_path = "models/bert_finetune_2.model"
+    originalBert, _ = load_pretrained_model('bert.small', num_hiddens=256, ffn_num_hiddens=512, num_heads=4,num_layers=2, dropout=0.1, max_len=512, devices=devices)
+    originalNet = BERTClassifier(originalBert)
+    newBert, _ = load_finetune_model(model_save_path, num_hiddens=256, ffn_num_hiddens=512, num_heads=4,num_layers=2, dropout=0.1, max_len=512, devices=devices)
+    newNet = newBert 
+    #print(newNet.bert.hidden.parameters())
+    for parameter in newNet.hidden.parameters():
+        print(parameter)
+    
+    for parameter in originalNet.hidden.parameters():
+        print(parameter)
+
 if __name__ == "__main__":
     Finetune()
+    #CompareParameter()

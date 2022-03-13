@@ -1,3 +1,4 @@
 data
 models/bert_finetune.model
 dataset/reviews_medium.csv
+models/bert_finetune_2.model
